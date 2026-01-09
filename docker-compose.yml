@@ -1,0 +1,11 @@
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src/instance:/app/instance
+    environment:
+      - FLASK_ENV=development
