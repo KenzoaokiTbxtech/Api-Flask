@@ -24,5 +24,6 @@ jobs:
 
     - name: Run Tests
       run: |
+       cd src
        pytest test.py -v --disable-warnings
        
