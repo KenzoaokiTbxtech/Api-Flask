@@ -10,6 +10,9 @@ def client():
         with app.app_context():
             db.create_all()
         yield client
+        with app.app_context():
+            db.session.remove()
+            db.drop_all()
 
 
 def test_api_funcionando(client):
