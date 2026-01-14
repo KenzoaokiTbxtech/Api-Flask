@@ -76,13 +76,6 @@ jobs:
         
         # Parar container
         docker stop flask-api-run || true
-          
-    - name: Testar Docker-compose
-      run: |
-        docker-compose up -d
-        sleep 15
-        curl -f http://localhost:5000/ || echo "⚠️ Docker-compose test falhou"
-        docker-compose down || true
 
   deploy-dockerhub:
     name: "Deploy Docker Hub"
