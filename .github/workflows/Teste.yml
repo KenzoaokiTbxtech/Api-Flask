@@ -6,7 +6,6 @@ jobs:
   build-python:
     runs-on: ubuntu-latest
 
-  
     steps:
     - name: Checkout 
       uses: actions/checkout@v4
@@ -26,4 +25,90 @@ jobs:
       run: |
        cd src
        pytest test.py -v --disable-warnings
-       
+
+  docker-build-test:
+    name: "Build & Test Docker"
+    runs-on: ubuntu-latest
+    needs: build-python
+
+    steps:
+    
+    - name: Build Docker 
+      run: |
+        docker build -t flask-api:latest .
+
+    - name: Scan Imagem
+      run: |
+        wget https://github.com/aquasecurity/trivy/releases/download/v0.45.1/trivy_0.45.1_Linux-64bit.deb
+        sudo dpkg -i trivy_0.45.1_Linux-64bit.deb
+        
+        trivy image --severity HIGH,CRITICAL --exit-code 1 flask-api:latest
+
+    - name: Test Docker Image
+      run: |
+        docker run --rm \ --name flask-api-test \
+        flask-api:latest \
+        sh -c "pip install pytest && python -m pytest test.py -v"
+
+    - name: Test API
+      run: |
+        docker run -d --rm \
+          --name flask-api-run \
+          -p 5000:5000
+          flask-api:latest
+
+          sleep 10
+          curl -f http://localhost:5000/ || exit 1
+
+          docker stop flask-api-run
+          
+    - name: Testar Docker-compose
+      run: |
+        docker-compose up -d
+        sleep 15
+        curl -f http://localhost:5000/ || exit 1
+        docker-compose down
+
+  deploy-dockerhub:
+    name: "Deploy Docker Hub"
+    runs-on: ubuntu-latest
+    needs: [build-python, docker-build-test]
+
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+    - name: Login Docker Hub
+      uses: docker/login-action@latest
+      with: 
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extrair metadados
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ secrets.DOCKERHUB_USERNAME }}/flask-api
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+    
+    - name: Build e push para Docker Hub
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Verificar imagem pushada
+      run: |
+        echo "✅ Imagem disponível no Docker Hub:"
+        echo "📦 ${{ secrets.DOCKERHUB_USERNAME }}/flask-api:latest"
+        echo "🏷️ Tags: ${{ steps.meta.outputs.tags }}"    
+
+      
