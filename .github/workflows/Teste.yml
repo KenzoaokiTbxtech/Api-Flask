@@ -32,6 +32,13 @@ jobs:
     needs: build-python
 
     steps:
+
+    - name: Estrutura
+      run: |
+        echo "Estutura do Projeto: "
+        ls -la
+        pwd
+      
     
     - name: Build Docker 
       run: |
