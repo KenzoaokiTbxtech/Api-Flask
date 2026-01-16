@@ -46,13 +46,12 @@ jobs:
         docker build -t flask-api:latest .
 
     - name: Scan Imagem
-      continue-on-error: true  # ⚠️ Permite continuar mesmo com vulnerabilidades
       run: |
         wget https://github.com/aquasecurity/trivy/releases/download/v0.45.1/trivy_0.45.1_Linux-64bit.deb
         sudo dpkg -i trivy_0.45.1_Linux-64bit.deb
         
-        # Scan mas permite continuar
-        trivy image --severity HIGH,CRITICAL flask-api:latest || echo "⚠️ Vulnerabilidades encontradas"
+        # Scan 
+        trivy image --severity HIGH,CRITICAL flask-api:latest 
 
     - name: Test Docker Image
       run: |
@@ -72,14 +71,14 @@ jobs:
         sleep 10
         
         # Testar endpoint (ajuste conforme sua API)
-        curl -f http://localhost:5000/ || echo "⚠️ API não respondeu, mas continuando..."
+        curl -f http://localhost:5000/ || echo "⚠️ API não respondeu"
         
         # Parar container
         docker stop flask-api-run || true
 
   deploy-dockerhub:
     name: "Deploy Docker Hub"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: Teste
     needs: [build-python, docker-build-test]
     
