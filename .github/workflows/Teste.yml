@@ -91,9 +91,9 @@ jobs:
 
   deploy-dockerhub:
     name: "Deploy Docker Hub"
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     environment: Teste
-    needs: [build-python, docker-test]
+    needs: [build-python, docker-build, docker-test]
     
     
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
