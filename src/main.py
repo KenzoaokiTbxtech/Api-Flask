@@ -14,7 +14,7 @@ def index():
 @app.route("/animais", methods=["GET", "POST", "PUT", "DELETE"])
 def animais():
     if request.method == "GET":
-        animais = Animais.query.all()
+        animais = db.session.query(Animais).all()
         return {"animais": [repr(animal) for animal in animais]}, 200
         
     elif request.method == "POST":
@@ -36,14 +36,14 @@ def animais():
         especie = data.get("especie")
         idade = data.get("idade")
 
-        animal = Animais.query.get(animal_id)
+        animal = db.session.get(Animais, animal_id)
         if animal:
             if nome:
-             animal.nome = nome
+                animal.nome = nome
             if especie:
-             animal.especie = especie
+                animal.especie = especie
             if idade:
-             animal.idade = idade
+                animal.idade = idade
             db.session.commit()
             return {"mensagem": "Animal atualizado com sucesso!"}, 200
         else:
@@ -52,13 +52,13 @@ def animais():
     elif request.method == "DELETE":
         data = request.get_json()
         animal_id = data.get("id")
-        animal = Animais.query.get(animal_id)
-    if animal:
-        db.session.delete(animal)
-        db.session.commit()
-        return {"mensagem": "Animal excluído com sucesso!"}, 200
-    else:
-        return {"mensagem": "Animal não encontrado."}, 404
+        animal = db.session.get(Animais, animal_id)
+        if animal:
+            db.session.delete(animal)
+            db.session.commit()
+            return {"mensagem": "Animal excluído com sucesso!"}, 200
+        else:
+            return {"mensagem": "Animal não encontrado."}, 404
 
 if __name__ == "__main__":
     with app.app_context():
