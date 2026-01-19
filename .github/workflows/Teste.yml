@@ -94,6 +94,28 @@ jobs:
         # Parar container
         docker stop flask-api-run 
 
+  gitleaks-scan:
+    name: GitLeaks Scan
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout 
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 
+
+    - name: Run GitLeaks
+      uses: zricethezav/gitleaks-action@v1.3.0
+      with:
+        args: "--redact --exit-code 1 --report-path=gitleaks-report.json"
+
+    - name: Subir Report gitleaks
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: gitleaks-report
+        path: gitleaks-report.json
+
   deploy-dockerhub:
     name: "Deploy Docker Hub"
     runs-on: ubuntu-latest
