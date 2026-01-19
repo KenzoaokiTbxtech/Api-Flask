@@ -1,0 +1,23 @@
+name: Gitleaks Scan
+on: [push]
+jobs:
+    gitleaks-scan:
+        name: GitLeaks Scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+                uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+
+            - name: Run GitLeaks
+                uses: zricethezav/gitleaks-action@v2
+                with:
+                    args: "--redact --exit-code 1 --report-path=gitleaks-report.json"
+
+            - name: Subir Report gitleaks
+                if: failure()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: gitleaks-report
+                    path: gitleaks-report.json
