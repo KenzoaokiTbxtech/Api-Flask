@@ -105,13 +105,13 @@ jobs:
         fetch-depth: 0 
 
     - name: Run GitLeaks
-      uses: zricethezav/gitleaks-action@v4
+      uses: zricethezav/gitleaks-action@v2
       with:
         args: "--redact --exit-code 1 --report-path=gitleaks-report.json"
 
     - name: Subir Report gitleaks
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: gitleaks-report
         path: gitleaks-report.json
