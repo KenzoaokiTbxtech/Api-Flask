@@ -58,13 +58,20 @@ jobs:
       run: |
         docker build -t flask-api:latest .
 
-    - name: Scan Imagem
+    - name: Scan Imagem Trivy
       run: |
         wget https://github.com/aquasecurity/trivy/releases/download/v0.45.1/trivy_0.45.1_Linux-64bit.deb
         sudo dpkg -i trivy_0.45.1_Linux-64bit.deb
         
          # Scan 
         trivy image --severity HIGH,CRITICAL flask-api:latest 
+
+    - name: Teste com o Checkov
+      id: checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        framework: "dockerfile"
 
     - name: Test Docker Image
       run: |
