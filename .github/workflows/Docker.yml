@@ -70,6 +70,13 @@ jobs:
       with:
         directory: .
         framework: "dockerfile"
+    
+    - name: Checando Keys com TruffleHog
+      uses: trufflesecurity/trufflehog-action@v2
+      with:
+        run: |
+          docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest docker --image trufflehog-python:latest --only-verified # Executa a verificação de segredos
+
 
     - name: Test Docker Image
       run: |
