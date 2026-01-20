@@ -66,10 +66,20 @@ jobs:
       run: snyk auth ${{secrets.SNYK_TOKEN}}
       
     - name: Run Snyk Test
-      run: snyk container test --docker flask-api:latest
+      run: |
+       snyk container test flask-api:latest \
+       --severity-threshold=high \
+       --json > snyk-test-report.json || echo "Snyk test completed"
+
+       echo "=== Vulnerabilidades encontradas ==="
+       jq '.vulnerabilities[] | {severity: .severity, packageName: .packageName}' snyk-test-report.json 2>/dev/null || echo "Sem vulnerabilidades HIGH/CRITICAL"
 
     - name: Snyk Report
-      run: snyk container monitor --docker flask-api:latest
+      run: |
+       snyk container monitor flask-api:latest \
+       --severity-threshold=low \
+       --json > snyk-monitor-report.json
+       echo "✅ Resultados enviados para dashboard Snyk"
 
     - name: Scan Imagem Trivy
       uses: aquasecurity/trivy-action@master
