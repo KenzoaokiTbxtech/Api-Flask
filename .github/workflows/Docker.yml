@@ -64,6 +64,8 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         command: monitor
+        image: flask-api:latest
+        args: --severity-threshold=medium
 
     - name: Scan Imagem Trivy
       uses: aquasecurity/trivy-action@master
