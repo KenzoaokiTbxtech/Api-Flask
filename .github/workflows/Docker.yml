@@ -58,13 +58,17 @@ jobs:
       run: |
         docker build -t flask-api:latest .
 
-    - name: Snyk Check
-      uses: snyk/actions/docker@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: flask-api:latest
-        args: test --severity-threshold=medium  
+    - name: Install Snyk 
+      run: npm install -g snyk
+
+    - name: Auth Snyk
+      run: snyk aurh ${{secrets.SNYK_TOKEN}}
+
+    - name: Run Snyk Test
+      run: snyk container test --docker flask-api:latest
+
+    - name: Snyk Report
+      run: snyk container monitor --docker flask-api:latest
 
     - name: Scan Imagem Trivy
       uses: aquasecurity/trivy-action@master
