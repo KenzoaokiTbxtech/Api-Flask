@@ -48,6 +48,7 @@ jobs:
   docker-test:
     name: "Test Docker"
     runs-on: ubuntu-latest
+    environment: Teste
     needs: build-python
     steps:
     
@@ -61,10 +62,8 @@ jobs:
     - name: Install Snyk 
       run: npm install -g snyk
 
-    - name: Auth Snyk
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: snyk config set api=$SNYK_TOKEN
+    - name: Snyk Auth
+      run: snyk auth ${{secrets.SNYK_TOKEN}}
       
     - name: Run Snyk Test
       run: snyk container test --docker flask-api:latest
