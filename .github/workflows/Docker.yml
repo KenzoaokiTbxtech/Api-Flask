@@ -64,7 +64,7 @@ jobs:
     - name: Auth Snyk
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: snyk auth $SNYK_TOKEN
+      run: snyk config set api=$SNYK_TOKEN
       
     - name: Run Snyk Test
       run: snyk container test --docker flask-api:latest
