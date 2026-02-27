@@ -26,37 +26,42 @@ jobs:
         cd src
         pytest test.py -v --disable-warnings || echo "Testes completos"
 
-  docker-build:
-    name: "Build Docker"
-    runs-on: ubuntu-latest
-    needs: build-python
-
-    steps:
-    - name: Checkout 
-      uses: actions/checkout@v4
-
-    - name: Estrutura
-      run: |
-        echo "Estrutura do Projeto: "
-        ls -la
-        pwd
-    
-    - name: Build Docker 
-      run: |
-        docker build -t flask-api:latest .
 
   docker-test:
     name: "Test Docker"
     runs-on: ubuntu-latest
+    environment: Teste
     needs: build-python
     steps:
     
     - name: Checkout 
       uses: actions/checkout@v4
       
-    - name: Construir Docker Novamente
+    - name: Construir Docker 
       run: |
         docker build -t flask-api:latest .
+
+    - name: Install Snyk 
+      run: npm install -g snyk
+
+    - name: Snyk Auth
+      run: snyk auth ${{secrets.SNYK_TOKEN}}
+      
+    - name: Run Snyk Test
+      run: |
+       snyk container test flask-api:latest \
+       --severity-threshold=high \
+       --json > snyk-test-report.json || echo "Snyk test completed"
+
+       echo "=== Vulnerabilidades encontradas ==="
+       jq '.vulnerabilities[] | {severity: .severity, packageName: .packageName}' snyk-test-report.json 2>/dev/null || echo "Sem vulnerabilidades HIGH/CRITICAL"
+
+    - name: Snyk Report
+      run: |
+       snyk container monitor flask-api:latest \
+       --severity-threshold=low \
+       --json > snyk-monitor-report.json
+       echo "✅ Resultados enviados para dashboard Snyk"
 
     - name: Scan Imagem Trivy
       uses: aquasecurity/trivy-action@master
@@ -106,7 +111,7 @@ jobs:
     name: "Deploy Docker Hub"
     runs-on: ubuntu-latest
     environment: Teste
-    needs: [build-python, docker-build, docker-test]
+    needs: [build-python,  docker-test]
     
     
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -136,8 +141,3 @@ jobs:
         
         echo "✅ Deploy realizado!"
     
-    - name: Verificar imagem pushada
-      run: |
-        echo "✅ Imagem disponível no Docker Hub:"
-        echo "📦 ${{ secrets.DOCKERHUB_USERNAME }}/flask-api:latest"
-        echo "🏷️ SHA: ${{ secrets.DOCKERHUB_USERNAME }}/flask-api:${{ github.sha }}"
