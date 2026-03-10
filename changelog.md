@@ -1,3 +1,8 @@
+## 🚀 Release - 10/03/2026 08:03
+Minha release...
+
+---
+
 ## 🚀 Release - 10/03/2026 07:59
 'Teste'
 
