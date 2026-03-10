@@ -1,3 +1,8 @@
+## 🚀 Release - 10/03/2026 09:24
+Texto da Release
+
+---
+
 ## 🚀 Release - 10/03/2026 08:40
 Versão 3.0.0 - Agora Estou fazendo uma release
 
